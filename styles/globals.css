@@ -1,0 +1,215 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
+  color: #ccd6f6;
+  min-height: 100vh;
+  line-height: 1.6;
+  font-size: 17px;
+  /* overflow-x: hidden; */ /* Mencegah scroll horizontal yang tidak diinginkan - DIKOMENTARI SEMENTARA UNTUK TES STICKY HEADER */
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+main {
+  /* Ini sekarang dihandle oleh Layout, tapi kita bisa sisakan stylingnya jika Layout tidak punya wrapper <main> sendiri */
+  /* atau kita bisa pindahkan padding ke container di dalam Layout */
+  /* Untuk saat ini, Layout kita punya <main>, jadi ini mungkin tidak langsung berlaku, 
+     kecuali jika kita tambahkan class ke <main> di Layout dan target class itu */
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 0 1.5rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-bottom: 1.25rem;
+  color: #ccd6f6;
+}
+
+h1 {
+  font-size: 2.8rem;
+  color: #e6f1ff;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 2rem;
+  color: #e6f1ff;
+}
+
+/* Styling untuk form di admin agar lebih serasi */
+form div {
+  margin-bottom: 1.25rem;
+}
+
+form label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-weight: bold;
+  color: #a8b2d1;
+}
+
+form input[type="text"],
+form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #1e3a5f;
+  border-radius: 5px;
+  font-size: 1rem;
+  background-color: #172a45;
+  color: #ccd6f6;
+}
+
+input:focus, select:focus {
+  border-color: #64ffda !important;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.25), 0 0 0 2px rgba(100, 255, 218, 0.3) !important;
+  outline: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(17, 34, 68, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #64ffda;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52cca9;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(100, 255, 218, 0.2);
+  color: #64ffda;
+}
+
+form button[type="submit"] {
+  background-color: #64ffda;
+  color: #0a192f;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+form button[type="submit"]:hover {
+  background-color: #52cca9;
+  box-shadow: 0 2px 10px rgba(100, 255, 218, 0.2);
+}
+
+/* Pesan status */
+form + p {
+  margin-top: 1.5rem;
+  padding: 12px;
+  border-radius: 5px;
+  background-color: rgba(100, 255, 218, 0.1);
+  border: 1px solid #64ffda;
+  color: #64ffda;
+  text-align: center;
+}
+
+/* Efek gradien dan pola halus untuk background body */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2; /* Pastikan di belakang konten */
+  background: 
+    linear-gradient(160deg, rgba(10, 25, 47, 0.95) 0%, rgba(17, 34, 68, 0.98) 50%, rgba(10, 25, 47, 0.95) 100%),
+    radial-gradient(ellipse at 30% 20%, rgba(100, 255, 218, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(88, 166, 255, 0.08) 0%, transparent 60%);
+  background-attachment: fixed; /* Agar gradien tidak ikut scroll */
+}
+
+/* Penyesuaian untuk mobile */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; /* Sedikit perkecil font dasar di mobile */
+  }
+  .container {
+    padding: 0 1rem; /* Kurangi padding container di mobile */
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  h1 {
+    font-size: 2.2rem; /* Perkecil H1 di mobile */
+  }
+  h2 {
+    font-size: 1.8rem; /* Perkecil H2 di mobile */
+  }
+}
+
+/* Styling untuk bintang jatuh */
+.stars-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; /* Pastikan setinggi viewport */
+  pointer-events: none; /* Agar tidak mengganggu interaksi dengan konten lain */
+  z-index: -1; /* Di belakang konten utama, tapi di atas gradien body::before */
+  overflow: hidden; /* Penting agar bintang yang keluar viewport tidak menyebabkan scroll */
+}
+
+.star {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  animation: fall linear infinite;
+  box-shadow: 0 0 6px white, 0 0 12px rgba(255, 255, 255, 0.7); /* Efek glow yang lebih halus */
+  /* Ukuran dan posisi awal akan di-set via inline style oleh komponen React */
+}
+
+@keyframes fall {
+  0% {
+    opacity: 0; /* Mulai tidak terlihat */
+    transform: translateY(-20vh) rotate(0deg); /* Mulai dari atas viewport */
+  }
+  10% {
+    opacity: 1; /* Muncul */
+  }
+  90% {
+    opacity: 1; /* Tetap terlihat sebagian besar perjalanan */
+  }
+  to {
+    transform: translateY(120vh) rotate(720deg); /* Jatuh melewati bawah viewport dan berputar */
+    opacity: 0;
+  }
+}
+/* Akhir styling bintang jatuh */ 

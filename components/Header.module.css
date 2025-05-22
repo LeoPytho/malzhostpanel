@@ -1,0 +1,52 @@
+.header {
+  background-color: rgba(10, 25, 47, 0.85); /* Warna background header sedikit transparan */
+  padding: 1rem 0;
+  border-bottom: 1px solid #1e3a5f; /* Garis bawah tipis */
+  backdrop-filter: blur(5px); /* Efek blur untuk modern look */
+  position: sticky; /* Membuat header tetap di atas saat scroll */
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+.navContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo a {
+  color: #64ffda; /* Warna aksen untuk logo */
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.logo a:hover {
+  color: #a8b2d1;
+  text-decoration: none;
+}
+
+.navLinks ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem; /* Jarak antar link */
+}
+
+.navLinks a {
+  color: #ccd6f6; /* Warna teks link */
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.2s ease-in-out;
+}
+
+.navLinks a:hover,
+.navLinks a.active {
+  color: #64ffda; /* Warna aksen saat hover atau active */
+  text-decoration: none;
+} 

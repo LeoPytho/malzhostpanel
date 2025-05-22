@@ -1,0 +1,9 @@
+{
+  "pterodactylDomain": "p2.temanista.com",
+  "pterodactylApiKeyPTLA": "ptla_EoLAHjPzOd9ladWhNs82VWNTwgxfK3DfrQ4JCTe9XRk",
+  "pterodactylApiKeyPTLC": "ptlc_vIq5b5uWLaHYzqdKesIaPXNgTvGQSfZfNIQ7p16cE26&loc=1",
+  "defaultLocationId": "1",
+  "defaultEggId": "15",
+  "defaultNestId": "5",
+  "apiWrapperUrl": "https://apiku-niki.vercel.app"
+}

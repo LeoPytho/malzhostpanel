@@ -1,0 +1,28 @@
+.footer {
+  background-color: #0a192f; /* Warna background footer sama dengan body */
+  color: #a8b2d1; /* Warna teks footer yang lembut */
+  padding: 2rem 0;
+  text-align: center;
+  border-top: 1px solid #1e3a5f; /* Garis atas tipis */
+  margin-top: auto; /* Mendorong footer ke bawah jika konten pendek */
+}
+
+.footerContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.footer a {
+  color: #64ffda; /* Warna aksen untuk link di footer */
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+} 
