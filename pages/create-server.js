@@ -15,11 +15,11 @@ export async function getServerSideProps(context) {
       storeSettings = await storeRes.json();
     } else {
       console.error("Failed to fetch store settings, status:", storeRes.status);
-      storeSettings = { storeName: "Panel Niki", storeDescription: "Gagal memuat deskripsi default." };
+      storeSettings = { storeName: "Panel Akmal", storeDescription: "Gagal memuat deskripsi default." };
     }
   } catch (error) {
     console.error("Error fetching store settings:", error);
-    storeSettings = { storeName: "Panel Niki", storeDescription: "Error koneksi saat memuat pengaturan." };
+    storeSettings = { storeName: "Panel Akmal", storeDescription: "Error koneksi saat memuat pengaturan." };
   }
 
   try {
@@ -444,7 +444,7 @@ export default function CreateServerPage({ settings, serversData }) {
   return (
     <>
       <Head>
-        <title>Buat Server Baru - {settings?.storeName || 'Panel Niki Store'}</title>
+        <title>Buat Server Baru - {settings?.storeName || 'Panel Akmal Store'}</title>
         <meta name="description" content="Pesan server Pterodactyl berkualitas dengan mudah, cepat, dan konfigurasi kustom." />
       </Head>
       <h1 style={{ 
