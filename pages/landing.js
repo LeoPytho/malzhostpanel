@@ -6,7 +6,7 @@ export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>Panel Niki Store - Server Pterodactyl Berkualitas</title>
+        <title>Panel Akmal Store - Server Pterodactyl Berkualitas</title>
         <meta name="description" content="Pesan server Pterodactyl berkualitas dengan mudah, cepat, dan konfigurasi kustom. Dukungan 24/7 dan harga terjangkau." />
       </Head>
 
