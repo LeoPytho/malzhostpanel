@@ -50,7 +50,7 @@ export default function Header() {
             fontWeight: 'bold',
             textShadow: '0 0 10px rgba(100, 255, 218, 0.5)',
           }}>
-            Panel Niki Store
+            Panel Akmal Store
           </Link>
 
           <button 
