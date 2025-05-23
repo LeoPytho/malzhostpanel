@@ -230,8 +230,8 @@ export default function ApiDocs() {
   return (
     <>
       <Head>
-        <title>API Documentation - Panel Niki</title>
-        <meta name="description" content="Panel Niki API documentation and references" />
+        <title>API Documentation - Panel Akmal</title>
+        <meta name="description" content="Panel Akmal API documentation and references" />
       </Head>
 
       <div style={styles.container}>
@@ -240,7 +240,7 @@ export default function ApiDocs() {
         <div style={styles.introduction}>
           <h2 style={{ color: '#64ffda', marginTop: 0 }}>Introduction</h2>
           <p>
-            Dokumentasi ini berisi informasi detail tentang API QRIS yang tersedia di Panel Niki. 
+            Dokumentasi ini berisi informasi detail tentang API QRIS yang tersedia di Panel Akmal. 
             API ini dapat digunakan untuk membuat kode pembayaran QRIS, memeriksa status pembayaran, 
             dan fitur lainnya terkait pembayaran QRIS.
           </p>
