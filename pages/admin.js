@@ -341,7 +341,7 @@ function DashboardCard({ title, value, count }) {
 
 AdminPage.getLayout = function getLayout(page) {
   return (
-    <Layout title="Panel Admin - Panel Niki" description="Kelola pengaturan toko Anda.">
+    <Layout title="Panel Admin - Panel Akmal" description="Kelola pengaturan toko Anda.">
       {page}
     </Layout>
   );
