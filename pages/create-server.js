@@ -60,7 +60,7 @@ const cpuOptions = [
   { label: 'Unlimited', value: '0' }
 ];
 const pricingScheme = {
-  ramPerGb: 600, ramUnlimited: 4000, diskPerGb: 600, diskUnlimited: 3500,
+  ramPerGb: 6, ramUnlimited: 4, diskPerGb: 6, diskUnlimited: 3,
   cpu: { 
     '60': 400, '70': 500, '80': 600, '90': 700, '100': 800,
     '150': 900,
