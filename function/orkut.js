@@ -115,14 +115,13 @@ async function createQRIS(amount, codeqr) {
     }
 }
 
-async function checkQRISStatus(merchant, keyorkut) {
+async function checkQRISStatus(apikey, username, token) {
     try {
-        const apiUrl = `https://gateway.okeconnect.com/api/mutasi/qris/${merchant}/${keyorkut}`;
+        const apiUrl = `https://malzxyz-apiorkut.vercel.app/orderkuota/mutasiqr?apikey=${apikey}&username=${username}&token=${token}`;
         const response = await axios.get(apiUrl);
         const result = response.data;
-        const data = result.data;
         
-        if (data.length === 0) {
+        if (!result.status || !result.result || result.result.length === 0) {
             return {
                 date: new Date().toISOString().replace('T', ' ').slice(0, 19),
                 amount: "0",
@@ -133,24 +132,48 @@ async function checkQRISStatus(merchant, keyorkut) {
                 buyer_reff: "N/A",
                 balance: "0"
             };
-        } else {
-            const latestTransaction = data[0];
+        }
+        
+        // Filter transaksi: hanya yang status "IN" dan keterangan mengandung "NOBU"
+        const validTransactions = result.result.filter(transaction => 
+            transaction.status === "IN" && 
+            transaction.keterangan.includes("NOBU")
+        );
+        
+        if (validTransactions.length === 0) {
             return {
-                date: latestTransaction.date,
-                amount: latestTransaction.amount,
+                date: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                amount: "0",
                 type: "CR",
                 qris: "static",
-                brand_name: latestTransaction.brand_name,
-                issuer_reff: latestTransaction.issuer_reff || "N/A",
-                buyer_reff: latestTransaction.buyer_reff || "N/A",
-                balance: latestTransaction.balance || "0"
+                brand_name: "No Transaction",
+                issuer_reff: "N/A",
+                buyer_reff: "N/A",
+                balance: "0"
             };
         }
+        
+        // Ambil transaksi terbaru (pertama dalam array setelah filter)
+        const latestTransaction = validTransactions[0];
+        
+        return {
+            date: latestTransaction.tanggal,
+            amount: latestTransaction.kredit.replace(/\./g, ''), // Hapus titik pemisah ribuan
+            type: "CR",
+            qris: "static",
+            brand_name: latestTransaction.brand.name,
+            issuer_reff: latestTransaction.keterangan || "N/A",
+            buyer_reff: latestTransaction.id.toString(),
+            balance: latestTransaction.saldo_akhir.replace(/\./g, '') // Hapus titik pemisah ribuan
+        };
     } catch (error) {
         console.error('Error checking QRIS status:', error);
         throw error;
     }
 }
+
+// Contoh penggunaan:
+// checkQRISStatus('Malzxyz', 'akmalygy', '832209:jyUCpMR241vQI3qtNWYFmzcfblnASak6');
 
 module.exports = {
     convertCRC16,
