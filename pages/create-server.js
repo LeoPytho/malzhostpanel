@@ -81,7 +81,7 @@ export default function CreateServerPage({ settings, serversData }) {
   const [newServerUser, setNewServerUser] = useState('');
   const [newServerRam, setNewServerRam] = useState(memoryOptions[0].value);
   const [newServerDisk, setNewServerDisk] = useState(memoryOptions[0].value);
-  const [newServerCpu, setNewServerCpu] = useState(cpuOptions[3].value); // Default to 100% CPU
+  const [newServerCpu, setNewServerCpu] = useState(cpuOptions[3].value);
   const [createMessage, setCreateMessage] = useState({ type: '', text: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
@@ -89,7 +89,7 @@ export default function CreateServerPage({ settings, serversData }) {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [popupData, setPopupData] = useState({ accessUrl: '', serverName: '', username: '', password: '' });
   const [copyMessage, setCopyMessage] = useState('');
-  const [paymentStep, setPaymentStep] = useState('formInput'); // 'formInput', 'processingPayment', 'showQr', 'paymentFailed'
+  const [paymentStep, setPaymentStep] = useState('formInput');
   const [qrImageUrl, setQrImageUrl] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [paymentExpiration, setPaymentExpiration] = useState('');
@@ -111,8 +111,8 @@ export default function CreateServerPage({ settings, serversData }) {
     const price = calculateTotalPrice(newServerRam, newServerDisk, newServerCpu);
     setCalculatedPrice(price);
     const totalPriceBeforeRandomization = price + ADMIN_FEE;
-    if (totalPriceBeforeRandomization < ADMIN_FEE) { // Ensure it's at least ADMIN_FEE
-        setFinalAmountForPayment(ADMIN_FEE + (Math.floor(Math.random() * 90) + 10)); // Add random digits even if price is 0
+    if (totalPriceBeforeRandomization < ADMIN_FEE) {
+        setFinalAmountForPayment(ADMIN_FEE + (Math.floor(Math.random() * 90) + 10));
         return;
     }
     const majorPart = Math.floor(totalPriceBeforeRandomization / 100);
@@ -131,18 +131,16 @@ export default function CreateServerPage({ settings, serversData }) {
     }
   }, [paymentStep]);
 
-  // EFFECT TO RESTORE STATE FROM URL
   useEffect(() => {
     const { query, isReady, replace, pathname } = router;
-    // Destructure specific query params for stable dependencies and direct use
     const urlTransactionId = query.transaction_id;
     const urlQrImageUrl = query.qr_image_url;
     const urlPaymentExpiration = query.payment_expiration;
-    // server_details will now be read from sessionStorage
+    const urlPaymentAmount = query.payment_amount;
 
     if (!isReady) return;
 
-    if (urlTransactionId && urlQrImageUrl && urlPaymentExpiration) { // Check for essential URL params
+    if (urlTransactionId && urlQrImageUrl && urlPaymentExpiration && urlPaymentAmount) {
       try {
         const storedServerDetailsString = sessionStorage.getItem('pendingServerDetails');
         if (!storedServerDetailsString) {
@@ -155,35 +153,31 @@ export default function CreateServerPage({ settings, serversData }) {
           setTransactionId(urlTransactionId);
           setQrImageUrl(decodeURIComponent(urlQrImageUrl));
           setPaymentExpiration(urlPaymentExpiration);
+          setFinalAmountForPayment(parseInt(urlPaymentAmount));
           setPendingServerDetails(recoveredPendingServerDetails);
           setPaymentStep('showQr');
           setPaymentMessage({ type: 'info', text: 'Melanjutkan sesi pembayaran sebelumnya. Silakan pindai QRIS atau cek status.' });
-          startPaymentPolling(urlTransactionId);
+          startPaymentPolling(urlTransactionId, parseInt(urlPaymentAmount));
         }
       } catch (error) {
         console.error("Gagal memulihkan sesi pembayaran. Kesalahan:", error);
-        // Clear all related payment state and URL params as restoration failed critically
         setTransactionId('');
         setQrImageUrl('');
         setPaymentExpiration('');
         setPendingServerDetails(null);
-        sessionStorage.removeItem('pendingServerDetails'); // Clear from session storage as well
+        sessionStorage.removeItem('pendingServerDetails');
         setPaymentStep('formInput');
         setPaymentMessage({ type: 'error', text: 'Gagal memulihkan sesi pembayaran. Data mungkin korup atau sesi telah berakhir. Harap isi ulang form dan coba lagi.' });
 
-        // Clean the corrupted query parameters from URL
         const cleanQuery = { ...query };
         delete cleanQuery.transaction_id;
         delete cleanQuery.qr_image_url;
         delete cleanQuery.payment_expiration;
-        // server_details is no longer in the query to delete, but if it was there due to old code, remove it.
-        if (cleanQuery.server_details) delete cleanQuery.server_details; 
+        delete cleanQuery.payment_amount;
         router.replace({ pathname, query: cleanQuery }, undefined, { shallow: true });
       }
     }
-  // Use the actual string values from query in dependency array for stability
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady, router.query.transaction_id, router.query.qr_image_url, router.query.payment_expiration]); // Removed router.query.server_details
+  }, [router.isReady, router.query.transaction_id, router.query.qr_image_url, router.query.payment_expiration, router.query.payment_amount]);
 
   const handleInitiatePayment = async (e) => {
     e.preventDefault(); 
@@ -201,7 +195,6 @@ export default function CreateServerPage({ settings, serversData }) {
     };
     setPendingServerDetails(serverDetails);
     try {
-      // Save pendingServerDetails to sessionStorage
       sessionStorage.setItem('pendingServerDetails', JSON.stringify(serverDetails));
 
       const res = await fetch('/api/payment/initiate', { 
@@ -213,7 +206,7 @@ export default function CreateServerPage({ settings, serversData }) {
       if (!res.ok || data.error || !data.qrImageUrl) { 
         setPaymentMessage({ type: 'error', text: data.message || 'Gagal menginisiasi pembayaran. Silakan coba lagi.' }); 
         setPaymentStep('paymentFailed'); 
-        sessionStorage.removeItem('pendingServerDetails'); // Clear on failure
+        sessionStorage.removeItem('pendingServerDetails');
       } else { 
         setQrImageUrl(data.qrImageUrl); 
         setTransactionId(data.transactionId); 
@@ -226,18 +219,18 @@ export default function CreateServerPage({ settings, serversData }) {
           transaction_id: data.transactionId,
           qr_image_url: encodeURIComponent(data.qrImageUrl),
           payment_expiration: data.expirationTime || 'N/A',
-          // server_details: encodeURIComponent(JSON.stringify(pendingServerDetails)) // Removed from URL
+          payment_amount: finalAmountForPayment.toString()
         };
         router.replace({ pathname, query: newQuery }, undefined, { shallow: true });
         
         setPaymentStep('showQr'); 
-        startPaymentPolling(data.transactionId); 
+        startPaymentPolling(data.transactionId, finalAmountForPayment); 
       }
     } catch (err) { 
       console.error("Error initiating payment:", err); 
       setPaymentMessage({ type: 'error', text: 'Terjadi kesalahan internal saat menghubungi server pembayaran.' }); 
       setPaymentStep('paymentFailed'); 
-      sessionStorage.removeItem('pendingServerDetails'); // Clear on error
+      sessionStorage.removeItem('pendingServerDetails');
     }
     setIsLoading(false);
   };
@@ -252,7 +245,7 @@ export default function CreateServerPage({ settings, serversData }) {
     setShowSuccessPopup(true); 
     setPaymentStep('formInput'); 
     setPaymentMessage({ type: '', text: '' }); 
-    setCreateMessage({ type: 'success', text: 'Server berhasil dibuat setelah pembayaran dikonfirmasi!' }); // Updated message
+    setCreateMessage({ type: 'success', text: 'Server berhasil dibuat setelah pembayaran dikonfirmasi!' });
     
     setNewServerName(''); 
     setNewServerUser(''); 
@@ -261,7 +254,7 @@ export default function CreateServerPage({ settings, serversData }) {
     setNewServerCpu(cpuOptions[3].value);
     
     setPendingServerDetails(null); 
-    sessionStorage.removeItem('pendingServerDetails'); // Clear from sessionStorage
+    sessionStorage.removeItem('pendingServerDetails');
     setQrImageUrl(''); 
     setTransactionId(''); 
     setPaymentExpiration('');
@@ -271,20 +264,19 @@ export default function CreateServerPage({ settings, serversData }) {
       pollingIntervalRef.current = null; 
     }
 
-    // Clean URL params
     const { pathname, query } = router;
     const cleanQuery = { ...query };
     delete cleanQuery.transaction_id;
     delete cleanQuery.qr_image_url;
     delete cleanQuery.payment_expiration;
-    // server_details is no longer in the query
+    delete cleanQuery.payment_amount;
     router.replace({ pathname, query: cleanQuery }, undefined, { shallow: true }).then(() => {
         console.log("URL cleaned, server list might need a manual refresh or updated fetching strategy.");
     });
   };
 
-  const checkPaymentStatus = async (currentTransactionId, isManualCheck = false) => {
-    if (!currentTransactionId || !pendingServerDetails) {
+  const checkPaymentStatus = async (currentTransactionId, expectedAmount, isManualCheck = false) => {
+    if (!currentTransactionId || !pendingServerDetails || !expectedAmount) {
       if (isManualCheck) {
         setPaymentMessage({ type: 'error', text: 'Detail transaksi tidak lengkap untuk memeriksa status.' });
       }
@@ -293,14 +285,18 @@ export default function CreateServerPage({ settings, serversData }) {
 
     if (isManualCheck) {
         setPaymentMessage({ type: 'info', text: 'Memeriksa status pembayaran Anda secara manual...' });
-        setIsLoading(true); // Set loading true specifically for manual check duration
+        setIsLoading(true);
     }
 
     try {
       const res = await fetch('/api/payment/check-status', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ transactionId: currentTransactionId, pendingServerDetails }) 
+        body: JSON.stringify({ 
+          transactionId: currentTransactionId, 
+          expectedAmount: expectedAmount,
+          pendingServerDetails 
+        }) 
       });
       const data = await res.json();
       if (data.paymentSuccess && data.serverCreated) { 
@@ -311,27 +307,23 @@ export default function CreateServerPage({ settings, serversData }) {
         setPaymentStep('paymentFailed'); 
         if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
       } else if (isManualCheck && !data.paymentSuccess) {
-        // If it's a manual check and payment is not successful yet (but API call was okay)
         setPaymentMessage({ type: 'info', text: data.message || 'Status pembayaran belum berhasil atau masih tertunda. Silakan coba lagi beberapa saat.' });
       }
-      // If polling and payment not yet successful, it continues silently as before.
-
     } catch (err) { 
       console.error("Error checking payment status:", err); 
       if (isManualCheck) {
         setPaymentMessage({ type: 'error', text: 'Terjadi kesalahan saat mencoba memeriksa status pembayaran. Silakan coba lagi.' });
       }
-      // For polling, errors are logged but don't necessarily stop polling unless designed to.
     } finally {
       if (isManualCheck) {
-        setIsLoading(false); // Set loading false when manual check finishes
+        setIsLoading(false);
       }
     }
   };
 
-  const startPaymentPolling = (currentTransactionId) => { 
+  const startPaymentPolling = (currentTransactionId, expectedAmount) => { 
     if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current); 
-    pollingIntervalRef.current = setInterval(() => checkPaymentStatus(currentTransactionId, false), 7000); // Pass false for isManualCheck
+    pollingIntervalRef.current = setInterval(() => checkPaymentStatus(currentTransactionId, expectedAmount, false), 7000);
   };
 
   const handleManualCheckPayment = () => { 
@@ -343,8 +335,11 @@ export default function CreateServerPage({ settings, serversData }) {
       setPaymentMessage({ type: 'error', text: 'Detail server untuk transaksi ini tidak ditemukan. Tidak dapat memeriksa status.' });
       return;
     }
-    // No need for oldIsLoading, checkPaymentStatus will handle isLoading for manual checks
-    checkPaymentStatus(transactionId, true); // Pass true for isManualCheck
+    if (!finalAmountForPayment) {
+      setPaymentMessage({ type: 'error', text: 'Jumlah pembayaran tidak ditemukan. Tidak dapat memeriksa status.' });
+      return;
+    }
+    checkPaymentStatus(transactionId, finalAmountForPayment, true);
   };
 
   const handleCopyDetails = () => { 
@@ -377,8 +372,6 @@ export default function CreateServerPage({ settings, serversData }) {
     boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.25)', 
     transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
   };
-  // :focus styles for inputs would ideally be in globals.css for better DX:
-  // input:focus, select:focus { border-color: #64ffda; box-shadow: inset 0 1px 4px rgba(0,0,0,0.25), 0 0 0 2px rgba(100, 255, 218, 0.3); outline: none; }
 
   const labelStyle = { 
     display: 'block', 
@@ -389,7 +382,7 @@ export default function CreateServerPage({ settings, serversData }) {
   };
 
   const subHeadingStyle = { 
-    marginTop: '0', // Reset for first heading in section
+    marginTop: '0',
     marginBottom: '2rem', 
     borderBottom: '1px solid #64ffda', 
     paddingBottom: '1rem', 
@@ -472,8 +465,7 @@ export default function CreateServerPage({ settings, serversData }) {
         <section style={sectionStyle}>
           <h2 style={subHeadingStyle}>Form Pembuatan Server</h2>
           <form onSubmit={handleInitiatePayment}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: '1.25rem'}}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: '1.25rem'}}>
               <div> 
                 <label htmlFor="newServerName" style={labelStyle}>Nama Server:</label> 
                 <input type="text" id="newServerName" value={newServerName} onChange={(e) => setNewServerName(e.target.value)} required style={inputStyle} placeholder="Contoh: My Awesome Server"/> 
@@ -509,7 +501,7 @@ export default function CreateServerPage({ settings, serversData }) {
             </div>
             <button 
               type="submit" 
-              disabled={isLoading || calculatedPrice < 0} // Allow 0 price if that's intended for free items before admin fee
+              disabled={isLoading || calculatedPrice < 0}
               style={ (isLoading || calculatedPrice < 0) ? disabledNeonButton : primaryNeonButton }
             >
               {isLoading ? 'Memproses Pembayaran...' : 'Buat Sekarang'}
@@ -565,13 +557,13 @@ export default function CreateServerPage({ settings, serversData }) {
               setPaymentStep('formInput'); 
               setPaymentMessage({type: '', text: ''}); 
               if(pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-              sessionStorage.removeItem('pendingServerDetails'); // Clear from sessionStorage
-              // Clean URL params on cancellation
+              sessionStorage.removeItem('pendingServerDetails');
               const { pathname, query } = router;
               const cleanQuery = { ...query };
               delete cleanQuery.transaction_id;
               delete cleanQuery.qr_image_url;
               delete cleanQuery.payment_expiration;
+              delete cleanQuery.payment_amount;
               router.replace({ pathname, query: cleanQuery }, undefined, { shallow: true });
             }} style={dangerNeonButton} disabled={isLoading}> 
               Batal Pembayaran
@@ -664,7 +656,7 @@ export default function CreateServerPage({ settings, serversData }) {
       }}>
         {serversData.result.map((server) => (
           <ServerCard 
-            key={server.id_server || server.name} // Fallback key
+            key={server.id_server || server.name}
             title={server.name}
             description={`RAM: ${server.ram === '0' || server.ram === 0 ? 'Unlimited' : server.ram + 'MB'}, CPU: ${server.cpu === '0' || server.cpu === 0 ? 'Unlimited' : server.cpu + '%'}, Disk: ${server.disk === '0' || server.disk === 0 ? 'Unlimited' : server.disk + 'MB'}`}
             specs={[`ID Server: ${server.id_server || 'N/A'}`, `Dibuat pada: ${formatDate(server.created_at)}`]}
@@ -673,4 +665,4 @@ export default function CreateServerPage({ settings, serversData }) {
       </div>
     </>
   );
-} 
+}
