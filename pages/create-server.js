@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import ServerCard from '../components/ServerCard';
 
-const ADMIN_FEE = 200;
+const ADMIN_FEE = 2;
 
 export async function getServerSideProps(context) {
   let storeSettings = {};
